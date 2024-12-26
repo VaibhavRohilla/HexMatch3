@@ -94,7 +94,7 @@ export class LevelGenerator extends Container {
     private createHexagon(x: number, y: number): void {
         const hex = new hexagons(0, 0, LevelVar.HEX_RADIUS, this.moveCurrentHandledPiece.bind(this), this.checkForDropPosition.bind(this));
         hex.position.set(x, y);
-        // hex.mask =  this.hexGridMask;
+        hex.mask =  this.hexGridMask;
         this.handeMovingPieces.push(hex);
         this.addChild(hex);
         setTimeout(() => {

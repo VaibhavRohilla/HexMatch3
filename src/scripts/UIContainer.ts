@@ -12,7 +12,7 @@ export class UiContainer extends Container
     constructor()
     {
         super();
-        this.position.set(config.minLeftX,0);
+        this.position.set(config.leftX,0);
         GameData.HighScore = ScoreFunctions.getHighscore();
         const BestScoreText = new TextLabel(200,50,0.5,"BEST",50,0xd64955);
         this.addChild(BestScoreText);
