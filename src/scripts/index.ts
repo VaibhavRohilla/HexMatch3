@@ -1,7 +1,7 @@
 import "../styles/style.css";
 import { App } from "./App";
 import { Globals } from "./Globals";
-const test = require("./test");
+// const test = require("./test");
 
 
 

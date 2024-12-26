@@ -1,7 +1,8 @@
 import * as PIXI from "pixi.js";
-import TWEEN from "@tweenjs/tween.js";
+import TWEEN, { Group } from "@tweenjs/tween.js";
 import { Globals } from "./Globals";
 import { Scene } from "./Scene";
+import { log } from "node:console";
 
 export class SceneManager {
 
@@ -10,6 +11,7 @@ export class SceneManager {
 
     container!: PIXI.Container;
     scene: Scene | null = null;
+    tweenGroup : Group = new Group();
 
     constructor() {
 
@@ -19,7 +21,7 @@ export class SceneManager {
         }
 
         SceneManager.instance = this;
-
+        Globals.SceneManager =  SceneManager.instance;
 
         this.container = new PIXI.Container();
         this.scene = null;
@@ -27,27 +29,30 @@ export class SceneManager {
 
 
     start(scene: Scene) {
-
         if (this.scene) {
             this.scene.destroyScene();
             this.scene = null;
+        
         }
 
 
 
         this.scene = scene;
-        this.scene.initScene(this.container)
-        // this.container.addChild(this.scene.sceneContainer);
-
-
-        if (window.orientation == 90 || window.orientation == -90) {
-
-            //orientation
-        }
+        this.scene.initScene(this.container);
     }
+    getMousePosition(callback: (data: { x: number; y: number }) => void): void {
+  
+          
+          this.container.interactive = true;
+          this.container.on("pointermove", (event) => {
+              
+              callback({ x: event.global.x, y: event.global.y });
+          });
+      }
 
     update(dt: number) {
-        TWEEN.update();
+        const currentTime = performance.now(); // Use current time
+        this.tweenGroup.update(currentTime); // Pass current time to update tweens
 
         if (this.scene && this.scene.update) {
             this.scene.update(dt);

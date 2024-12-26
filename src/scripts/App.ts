@@ -56,10 +56,9 @@ export class App{
 			loader.preload().then(() => {
 				
 				loader.preloadSounds(() => {
-					console.log("Preload Done");
+					// console.log("Preload Done");
 					loaderContainer.destroy();
-					SceneManager.instance!.start(new MainScene());
-					
+					SceneManager.instance!.start( new MainScene());
 				});
 			});
 		//   });

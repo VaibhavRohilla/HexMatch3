@@ -6,6 +6,7 @@ import { Globals } from './Globals';
 import { LoaderConfig, fontData, LoaderSoundConfig } from './LoaderConfig';
 import FontFaceObserver from 'fontfaceobserver';
 import { Howl } from 'howler';
+import { log } from 'node:console';
 
 export class Loader {
 
@@ -94,7 +95,6 @@ export class Loader {
              for (let key in this.resources) {
                  Assets.add({alias : key, src :  this.resources[key].default});
                  keys.push(key);
-                //  console.log(key);
                  
 
              }
@@ -115,6 +115,7 @@ export class Loader {
                         });
                     }
              
+             
              });
                 
                 
@@ -130,8 +131,7 @@ export class Loader {
                 // }
         
 
-            
-            console.log();
+        
             
             
         
@@ -157,6 +157,9 @@ export class Loader {
     preloadSounds(onCompleteCallback: () => void) {
         const totalCount = Object.keys(LoaderSoundConfig).length;
         let currentCount = 0;
+
+        if (totalCount == 0)
+            onCompleteCallback();
         for (let key in LoaderSoundConfig) {
       
             

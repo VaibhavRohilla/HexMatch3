@@ -2,6 +2,7 @@ import { Container, Graphics, Sprite } from "pixi.js";
 import { config } from "./appConfig";
 import { AnimatedBackgroundSprite, BackgroundGraphic, BackgroundSprite } from "./Background";
 import { TextLabel } from "./TextLabel";
+import { log } from "node:console";
 
 export abstract class Scene {
 
@@ -44,7 +45,7 @@ export abstract class Scene {
         // this.mainContainer.mask = mask;
 
     }
-
+  
    
 
     resetMainContainer() {
