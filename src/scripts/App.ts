@@ -12,7 +12,7 @@ export class App{
 	constructor() {
         (async () => {
             // Create a new application
-			await this.app.init({ background: 0x000000,resolution : window.devicePixelRatio || 1,autoDensity : true,antialias : true});
+			await this.app.init({ background: 0x191c28,resolution : window.devicePixelRatio || 1,autoDensity : true,antialias : true});
 
          	
 		// document.body.appendChild( Globals.stats.dom );
@@ -49,15 +49,14 @@ export class App{
 		this.app.ticker.add((dt) => SceneManager.instance!.update(dt.deltaTime));
 
 		// loader for loading data
-		const loaderContainer = new Container();
-		this.app.stage.addChild(loaderContainer);
-
-		const loader = new Loader( loaderContainer);
+		
+		const loader = new Loader();
+		this.app.stage.addChild(loader);
 			loader.preload().then(() => {
 				
 				loader.preloadSounds(() => {
-					// console.log("Preload Done");
-					loaderContainer.destroy();
+					console.log("Preload Done");
+					loader.destroy();
 					SceneManager.instance!.start( new MainScene());
 				});
 			});

@@ -4,17 +4,17 @@ import { config } from "./appConfig";
 import { GameData, Globals, LevelVar } from "./Globals";
 import { hexagons } from "./Hexagon";
 import { LevelHexagons } from "./LevelPieces";
-import { log } from "node:console";
 
 
 export class LevelGenerator extends Container {
-    private hexPieces: LevelHexagons[] = [];
-    private handeMovingPieces: hexagons[] = [];
-    private pickedPiece?: hexagons;
-    private hexMap: Map<string, LevelHexagons> = new Map();
+    hexPieces: LevelHexagons[] = [];
+    handeMovingPieces: hexagons[] = [];
+    pickedPiece?: hexagons;
+    hexMap: Map<string, LevelHexagons> = new Map();
     hexMovingGrid: Graphics = new Graphics();
     addHexagonInterval!: NodeJS.Timeout;
     hexGridMask : Graphics = new Graphics();
+    lastTenMoves : LevelHexagons[] = [];
 
     constructor() {
         super();
@@ -49,15 +49,21 @@ export class LevelGenerator extends Container {
 
     private setDropPosition(piece: hexagons, target: LevelHexagons): void {
         target.hexagonPlaced = piece;
+        target.hexagonPlaced.hexagonId = target.index;
         piece.isHandle = true;
         this.moveHexagon(piece, target.position.x, target.position.y, 500, () => this.matchAdjacent(target));
+     
+        
     }
+
 
     private setRandomDropPosition(piece: hexagons): void {
         const target = this.getRandomGraphics();
         target.hexagonPlaced = piece;
+        target.hexagonPlaced.hexagonId = target.index;
         piece.isHandle = true;
         this.moveHexagon(piece, target.position.x, target.position.y, 1000, () => this.matchAdjacent(target));
+
     }
 
     private moveHexagon(piece: hexagons, x: number, y: number, duration: number, onComplete?: () => void): void {
@@ -73,18 +79,13 @@ export class LevelGenerator extends Container {
         this.hexGridMask = this.createRoundedRect();
         this.addChild(this.hexMovingGrid,  this.hexGridMask);
 
-      
         this.createHexagon(this.hexMovingGrid.position.x - LevelVar.HEX_RADIUS * 1 * LevelVar.hexGap, this.hexMovingGrid.position.y + this.hexMovingGrid.height / 2);
-        
-      
-
-      
     }
 
     private createRoundedRect(): Graphics {
         const graphics = new Graphics();
-        graphics.roundRect(0, 0, config.logicalWidth * 0.9, 100, 45);
-        graphics.position.set(-config.logicalWidth / 2, 800);
+        graphics.roundRect(0, 0, config.logicalWidth*0.98 , 100, 30);
+        graphics.position.set(-config.logicalWidth / 2, 600);
         graphics.fill(LevelVar.FILL_COLOR);
         return graphics;
     }
@@ -145,6 +146,7 @@ export class LevelGenerator extends Container {
         } else {
             this.setRandomDropPosition(foundPiece);
         }
+
     }
 
     private calculateDistance(pos1: Point, pos2: Point): number {
@@ -170,30 +172,79 @@ export class LevelGenerator extends Container {
         return positions;
     }
 
-    private getRandomGraphics(): LevelHexagons {
+    private getRandomGraphics(): LevelHexagons{
         const availableHexes = this.hexPieces.filter(hex => !hex.hexagonPlaced);
-        if (availableHexes.length === 0) {
-            Globals.emitter?.Call("gameOver");
-            alert("Game Over");
-        }
+       
         return availableHexes[Math.floor(Math.random() * availableHexes.length)];
     }
 
     private matchAdjacent(hex: LevelHexagons): void {
-        // Find all connected hexagons with the same color
         const matches = this.findConnectedHexagons(hex);
-        
-        // Check if there are more than 2 matches
+    
         if (matches.length > 2) {
             matches.forEach(match => {
                 const hexagon = match.hexagonPlaced;
                 if (hexagon) {
                     // Destroy the hexagon and remove it from the grid
-                    hexagon.destroyHexagon(() => this.removeChild(hexagon));
+                    hexagon.destroyHexagon(() => {
+                        this.removeChild(hexagon);
+                    },true);
                     match.hexagonPlaced = undefined;
                 }
             });
+    
+            // Remove matched hexagons from lastTenMoves
+            this.lastTenMoves = this.lastTenMoves.filter(move => !matches.includes(move));
+        } else {
+            // Add hex to lastTenMoves if not matched
+            this.lastTenMoves.push(hex);
+            if (this.lastTenMoves.length > 10) {
+                this.lastTenMoves.shift();
+            }
         }
+    
+        console.log(this.lastTenMoves);
+        this.checkforGameOver();
+    }
+     reverseMove(): boolean {
+    // Check if there are any moves in the array
+    if (this.lastTenMoves.length === 0) {
+        console.log("No moves in lastTenMoves to process.");
+        return false;
+    }
+
+    // Get the first piece
+    const firstMove = this.lastTenMoves[0];
+
+    // Perform some action on the first piece
+    // Example: Log or apply custom logic
+    console.log("Processing first move:", firstMove);
+
+    // Custom logic can be added here, e.g., highlighting, modifying, etc.
+    if(firstMove.hexagonPlaced)
+    {
+        firstMove.hexagonPlaced.destroyHexagon(() => {
+             if(firstMove.hexagonPlaced)
+            this.removeChild(firstMove.hexagonPlaced);
+        },false);      
+    }
+    
+    firstMove.hexagonPlaced = undefined; // Hypothetical highlight function
+
+    // Remove the first piece from the array
+    this.lastTenMoves.shift();
+
+    // Log the updated lastTenMoves for debugging
+    console.log("Updated lastTenMoves:", this.lastTenMoves);
+    return true;
+}
+
+    checkforGameOver()
+    {
+        const availableHexes = this.hexPieces.filter(hex => !hex.hexagonPlaced);
+        if (availableHexes.length === 0) {
+            Globals.emitter?.Call("gameOver");
+        }  
     }
     
     private findConnectedHexagons(hex: LevelHexagons, visited: Set<LevelHexagons> = new Set()): LevelHexagons[] {
@@ -214,8 +265,30 @@ export class LevelGenerator extends Container {
         }
     
         return matches;
+    }   
+    hammerItUp(Target : LevelHexagons) : boolean
+    {
+        if(!Target.hexagonPlaced)return false; 
+
+       const hexagons =  this.getAllAdjacentHexagons(Target);
+       console.log("GOTHAMMERING",hexagons);
+       
+       hexagons.forEach(element => {
+        console.log("Destroying",element.hexagonPlaced);
+        
+           if(element.hexagonPlaced)
+           element.hexagonPlaced.destroyHexagon(() => {
+                if(element.hexagonPlaced)
+               this.removeChild(element.hexagonPlaced);
+                Globals.emitter?.Call("canUsePowerUps");
+                LevelVar.isGameOver =false;
+           },false);
+           element.hexagonPlaced = undefined;
+       });
+       return true;
     }
     
+
     private getAdjacentHexagonsByColor(hex: LevelHexagons): LevelHexagons[] {
         const neighbors: LevelHexagons[] = [];
         const directions = [
@@ -237,6 +310,30 @@ export class LevelGenerator extends Container {
             }
         });
     
+        return neighbors;
+    }
+
+    private getAllAdjacentHexagons(hex: LevelHexagons): LevelHexagons[] {
+        const neighbors: LevelHexagons[] = [];
+        const directions = [
+            { q: 0, r: -1 }, // Top
+            { q: 1, r: -1 }, // Top-right
+            { q: 1, r: 0 },  // Bottom-right
+            { q: 0, r: 1 },  // Bottom
+            { q: -1, r: 1 }, // Bottom-left (adjusted)
+            { q: -1, r: 0 }, // Top-left
+        ];
+    
+        const colorId = hex.hexagonPlaced?.colorId;
+        if (colorId === undefined) return neighbors;
+    
+        directions.forEach(({ q, r }) => {
+            const neighbor = this.getHexAt(hex.q + q, hex.r + r);
+            if (neighbor?.hexagonPlaced) {
+                neighbors.push(neighbor);
+            }
+        });
+        neighbors.push(hex);
         return neighbors;
     }
     

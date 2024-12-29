@@ -1,11 +1,12 @@
 import { Easing, Tween } from "@tweenjs/tween.js";
 import { collectRenderGroups, GlobalUniformSystem, Graphics} from "pixi.js";
-import { GameData, Globals, LevelVar } from "./Globals";
+import { GameData, Globals, LevelVar, powerUps } from "./Globals";
 
 export class hexagons extends Graphics {
    
     isHandle : boolean = false;
     colorId : number = -1;
+    hexagonId : number = -1;
     constructor(x: number, y: number, radius: number, isPickedcallback:( hexagons:hexagons) => void,isLeftCallback?:( hexagons:hexagons) => void) {
         super();
        
@@ -14,22 +15,51 @@ export class hexagons extends Graphics {
         
         this.drawHexagon(x, y, radius, color);
         this.colorId = color;
-        this.interactive = true;
+        this.setActive(true);
+
+
         this.on("pointerdown", () => {
             
             if(isPickedcallback&& !this.isHandle)
-            isPickedcallback(this);
-            return;
+            {
+                isPickedcallback(this);
+                return;
+            }
+            if(powerUps.canHammer)
+            {
+                Globals.emitter?.Call("HammerActivated",this);
+            }
+            if(powerUps.canMoveHand)
+                {
+                    Globals.emitter?.Call("HandActivated",this);
+                }
         })
         this.on("pointerup", () => {
             if(isLeftCallback)
-            isLeftCallback(this);
+            {
+                this.setActive(false);
+                isLeftCallback(this);
+            }
         })
     }
+    setActive(active : boolean)
+    {
+        if(active)
+        {
+            this.interactive = true;
+            this.cursor = 'pointer';
+        }
+        else
+        {
+            this.interactive = false;
+            this.cursor = '';
+        }
+    }
 
-
-    destroyHexagon(callBack:()=>void){
+    destroyHexagon(callBack:()=>void,earnCoin : boolean){
+        if(earnCoin)
         Globals.emitter?.Call("destroyCoin",{x:this.position.x,y:this.position.y});
+    
         new Tween(this.scale,Globals
             .SceneManager?.tweenGroup
         )

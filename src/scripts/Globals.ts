@@ -36,6 +36,7 @@ export const GameData = {
   	HighScore : 0,
   	CurrentSpeed : 4,
   	CurrentColorLevel : 3,
+	Money : 0,
 	canChangeLevel : true
 }
 
@@ -46,8 +47,14 @@ export const LevelVar = {
  	HEX_SPACING : 40,
 	hexGap : 10,
 	hexSpawnTime : 1700,
+	isGameOver : false
 }
 
+
+export const powerUps = {
+	canHammer : false,
+	canMoveHand : false
+}
 
 function saveInCookies(name: string, value: number | string) {
 	const expiryDate = new Date();
@@ -78,6 +85,7 @@ export const ScoreFunctions = {
 		}
     return false;
 	},
+
 	getHighscore() {
 		const highscore = getFromCookies("highScore");
 		if (highscore) {
@@ -85,5 +93,19 @@ export const ScoreFunctions = {
 		} else {
 			return 0;
 		}
+	},
+	getCurrentMoney() {
+		const Money = getFromCookies("Money");
+		if (Money) {
+			return parseInt(Money);
+		} else {
+			return 0;
+		}
+	},
+	setCurrentMoney(Money: number) {
+			GameData.Money += Money;
+			saveInCookies("Money", GameData.Money);
+			//save in cookies
+		}
 	}
-}
+
