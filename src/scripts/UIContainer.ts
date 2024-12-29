@@ -4,6 +4,7 @@ import { config } from "./appConfig";
 import { GameData, Globals, LevelVar, ScoreFunctions } from "./Globals";
 import { Easing, Tween } from "@tweenjs/tween.js";
 import { Button } from "./Button";
+import { log } from "node:console";
 
 export class UiContainer extends Container
 {
@@ -24,14 +25,14 @@ export class UiContainer extends Container
     }
     BottomUI() {
 
-        this.hammerBtn = new Button(Globals.resources.Hammer,0.05,50,{ x: 205 , y : 1795},()=>{Globals.emitter?.Call("canHammer")},false);
+        this.hammerBtn = new Button(Globals.resources.Hammer,0.05,100,{ x: 205 , y : 1795},()=>{Globals.emitter?.Call("canHammer")},false);
         this.hammerBtn.imageTexture.rotation = 0.5;
-        this.addChild( this.hammerBtn);
+        this.addChild(this.hammerBtn);
 
-        this.reverseBtn = new Button(Globals.resources.Reverse,0.05,40,{ x: 515 , y : 1795},()=>{Globals.emitter?.Call("ActivateReverse")},true);
+        this.reverseBtn = new Button(Globals.resources.Reverse,0.05,80,{ x: 515 , y : 1795},()=>{Globals.emitter?.Call("ActivateReverse")},true);
         this.addChild(this.reverseBtn);
 
-        this.handBtn = new Button(Globals.resources.Hand,0.05,10,{ x: 815 , y : 1795},()=>{Globals.emitter?.Call("canUseHand")},false);
+        this.handBtn = new Button(Globals.resources.Hand,0.05,50,{ x: 815 , y : 1795},()=>{Globals.emitter?.Call("canUseHand")},false);
         this.addChild(this.handBtn);
     }
     TopUI() {
@@ -101,6 +102,7 @@ export class UiContainer extends Container
 
     updateScore(score: number) {
         ScoreFunctions.setCurrentMoney(score);
+        console.log("Money: " + score%3);
         this.currentMoneyText.updateLabelText(GameData.Money.toString());
 
         const startScore = GameData.CurrentScore;

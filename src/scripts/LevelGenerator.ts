@@ -202,8 +202,6 @@ export class LevelGenerator extends Container {
                 this.lastTenMoves.shift();
             }
         }
-    
-        console.log(this.lastTenMoves);
         this.checkforGameOver();
     }
      reverseMove(): boolean {

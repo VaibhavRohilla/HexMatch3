@@ -47,7 +47,7 @@ export const LevelVar = {
  	HEX_SPACING : 40,
 	hexGap : 10,
 	hexSpawnTime : 1700,
-	isGameOver : false
+	isGameOver : true
 }
 
 

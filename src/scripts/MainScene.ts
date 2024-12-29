@@ -6,7 +6,7 @@ import { GameData, Globals, LevelVar, powerUps } from "./Globals";
 import { Easing, Tween } from "@tweenjs/tween.js";
 import { hexagons } from "./Hexagon";
 import { log } from "node:console";
-import { GameOverPanel } from "./GameOverPanel";
+import { GameRestartPopup, OpenPanel } from "./GameOverPanel";
 import { config } from "./appConfig";
 import { report } from "node:process";
 
@@ -19,8 +19,9 @@ export class MainScene extends Scene {
     super(0x191c28);
 
     this.mainContainer.addChild(this.lvlContainer);
-    // this.mainContainer.addChild(new GameOverPanel());    
     this.mainContainer.addChild(this.UiContainer);
+    this.mainContainer.addChild(new OpenPanel());
+      
   }
 
 
@@ -92,7 +93,7 @@ export class MainScene extends Scene {
     LevelVar.hexGap = 10;
     LevelVar.hexSpawnTime = 1700;
     GameData.CurrentColorLevel = 3;
-    LevelVar.isGameOver = false;
+    // LevelVar.isGameOver = false;
     GameData.canChangeLevel = true;
     GameData.CurrentScore = 0;
     this.mainContainer.removeChild(this.UiContainer);
@@ -101,14 +102,6 @@ export class MainScene extends Scene {
     this.mainContainer.removeChild(this.lvlContainer);
     this.lvlContainer = new LevelGenerator();
     this.mainContainer.addChild(this.lvlContainer);
-  }
-
-  checkForGameOver() {
-    const availableHexes = this.lvlContainer.hexPieces.filter(hex => !hex.hexagonPlaced);
-    if (availableHexes.length === 0) {
-      LevelVar.isGameOver = true;
-      this.resetGame();
-    }
   }
   /**
    * Handle received messages.
@@ -121,6 +114,7 @@ export class MainScene extends Scene {
     if (msgType === "gameOver") {
       LevelVar.isGameOver = true;
       this.resetGame();
+      this.mainContainer.addChild(new GameRestartPopup(5, () => { this.resetGame() }, () => { this.resetGame(); this.mainContainer.addChild(new OpenPanel())}));  
     }
     if (msgType === "changeLevel") {
       this.lvlContainer.expandHexGrid();
