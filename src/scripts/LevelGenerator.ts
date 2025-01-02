@@ -62,15 +62,19 @@ export class LevelGenerator extends Container {
         target.hexagonPlaced = piece;
         target.hexagonPlaced.hexagonId = target.index;
         piece.isHandle = true;
-        this.moveHexagon(piece, target.position.x, target.position.y, 1000, () => this.matchAdjacent(target));
+        this.moveHexagon(piece, target.position.x, target.position.y, 500, () => this.matchAdjacent(target));
 
     }
 
     private moveHexagon(piece: hexagons, x: number, y: number, duration: number, onComplete?: () => void): void {
+        
+        if(Globals.isVisible && GameData.isMusicOn)
+        setTimeout(() => { Globals.soundResources.placeEffect.play(); },200);
+
         new Tween(piece, Globals.SceneManager?.tweenGroup)
             .to({ x, y }, duration)
             .easing( Easing.Exponential.Out,)
-            .onComplete(() => onComplete?.())
+            .onComplete(() => { onComplete?.()})
             .start();
     }
 
@@ -214,11 +218,6 @@ export class LevelGenerator extends Container {
     // Get the first piece
     const firstMove = this.lastTenMoves[0];
 
-    // Perform some action on the first piece
-    // Example: Log or apply custom logic
-    console.log("Processing first move:", firstMove);
-
-    // Custom logic can be added here, e.g., highlighting, modifying, etc.
     if(firstMove.hexagonPlaced)
     {
         firstMove.hexagonPlaced.destroyHexagon(() => {

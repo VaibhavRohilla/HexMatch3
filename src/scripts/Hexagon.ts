@@ -57,16 +57,23 @@ export class hexagons extends Graphics {
     }
 
     destroyHexagon(callBack:()=>void,earnCoin : boolean){
+        const time = Math.floor(Math.random() * (500 - 0 + 1)) + 0;
+        setTimeout(() => {
+            if(Globals.isVisible && GameData.isMusicOn)
+        Globals.soundResources.Destroyed?.play(); 
         if(earnCoin)
-        Globals.emitter?.Call("destroyCoin",{x:this.position.x,y:this.position.y});
-    
-        new Tween(this.scale,Globals
-            .SceneManager?.tweenGroup
-        )
-        .to({x:0,y:0},500)
-        .easing(Easing.generatePow(2).InOut)
-        .onComplete(()=>{callBack();})
-        .start();
+            Globals.emitter?.Call("destroyCoin",{x:this.position.x,y:this.position.y});
+        
+            new Tween(this.scale,Globals
+                .SceneManager?.tweenGroup
+            )
+            .to({x:0,y:0},500)
+            .easing(Easing.generatePow(2).InOut)
+            .onComplete(()=>{callBack();
+            })
+            .start();
+        }, time);
+        
     }
     drawHexagon(
       

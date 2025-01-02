@@ -16,6 +16,7 @@ type globalDataType = {
   soundResources: { [key: string]: Howl };
 
   App: App | undefined,
+  isVisible: boolean;
 };
 
 export const Globals: globalDataType = {
@@ -29,6 +30,7 @@ export const Globals: globalDataType = {
   // fpsStats: undefined,
   App: undefined,
   soundResources: {},
+  isVisible: true,
 };
 
 export const GameData = {
@@ -37,7 +39,8 @@ export const GameData = {
   	CurrentSpeed : 4,
   	CurrentColorLevel : 3,
 	Money : 0,
-	canChangeLevel : true
+	canChangeLevel : true,
+	isMusicOn : true,
 }
 
 export const LevelVar = {

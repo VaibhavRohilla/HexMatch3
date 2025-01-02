@@ -3,7 +3,7 @@ import { TextLabel } from "./TextLabel";
 import { config } from "./appConfig";
 import { GameData, Globals, LevelVar, ScoreFunctions } from "./Globals";
 import { Easing, Tween } from "@tweenjs/tween.js";
-import { Button } from "./Button";
+import { musicButton, PowerUpButton } from "./Button";
 import { log } from "node:console";
 
 export class UiContainer extends Container
@@ -11,9 +11,9 @@ export class UiContainer extends Container
     currentScoreText !: TextLabel;
     BestScoreText !: TextLabel;
     currentMoneyText !: TextLabel;
-    hammerBtn !: Button;
-    reverseBtn !: Button;
-    handBtn !: Button;
+    hammerBtn !: PowerUpButton;
+    reverseBtn !: PowerUpButton;
+    handBtn !: PowerUpButton;
 
 
     constructor()
@@ -22,17 +22,20 @@ export class UiContainer extends Container
         this.TopUI();
         this.currentScoreUiInit();
         this.BottomUI();
+        const musicBtn = new musicButton();
+        this.addChild(musicBtn);
+        musicBtn.position.set(config.logicalWidth - 100,musicBtn.height*4 );
     }
     BottomUI() {
 
-        this.hammerBtn = new Button(Globals.resources.Hammer,0.05,100,{ x: 205 , y : 1795},()=>{Globals.emitter?.Call("canHammer")},false);
+        this.hammerBtn = new PowerUpButton(Globals.resources.Hammer,0.05,100,{ x: 205 , y : 1795},()=>{Globals.emitter?.Call("canHammer")},false);
         this.hammerBtn.imageTexture.rotation = 0.5;
         this.addChild(this.hammerBtn);
 
-        this.reverseBtn = new Button(Globals.resources.Reverse,0.05,80,{ x: 515 , y : 1795},()=>{Globals.emitter?.Call("ActivateReverse")},true);
+        this.reverseBtn = new PowerUpButton(Globals.resources.Reverse,0.05,80,{ x: 515 , y : 1795},()=>{Globals.emitter?.Call("ActivateReverse")},true);
         this.addChild(this.reverseBtn);
 
-        this.handBtn = new Button(Globals.resources.Hand,0.05,50,{ x: 815 , y : 1795},()=>{Globals.emitter?.Call("canUseHand")},false);
+        this.handBtn = new PowerUpButton(Globals.resources.Hand,0.05,50,{ x: 815 , y : 1795},()=>{Globals.emitter?.Call("canUseHand")},false);
         this.addChild(this.handBtn);
     }
     TopUI() {

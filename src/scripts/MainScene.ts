@@ -14,6 +14,7 @@ export class MainScene extends Scene {
 
   lvlContainer: LevelGenerator = new LevelGenerator();
   UiContainer: UiContainer = new UiContainer();
+  bgMusic : Howl =  Globals.soundResources.bgMusic;
 
   constructor() {
     super(0x191c28);
@@ -21,7 +22,8 @@ export class MainScene extends Scene {
     this.mainContainer.addChild(this.lvlContainer);
     this.mainContainer.addChild(this.UiContainer);
     this.mainContainer.addChild(new OpenPanel());
-      
+    this.bgMusicInit();
+   
   }
 
 
@@ -49,7 +51,7 @@ export class MainScene extends Scene {
     const controlY = ((startY + endY) / 2) + curveDirection * 100; // Adjust 100 for desired curvature
 
     let progress = { t: 0 }; // Progress from 0 to 1
-    const time = Math.random() < 0.5 ? 1000 : 800
+    const time = Math.floor(Math.random() * (1000 - 800 + 1)) + 800;
     new Tween(progress, Globals.SceneManager?.tweenGroup)
       .to({ t: 1 }, time) // Duration of 1000 ms
       .easing(Easing.Sinusoidal.InOut)
@@ -62,7 +64,8 @@ export class MainScene extends Scene {
       .onComplete(() => {
         this.mainContainer.removeChild(coin);
         this.UiContainer.updateScore(1);
-
+        if(Globals.isVisible && GameData.isMusicOn)
+          Globals.soundResources.Coin?.play(); 
       })
       .start();
 
@@ -82,7 +85,13 @@ export class MainScene extends Scene {
     if (!LevelVar.isGameOver)
       this.lvlContainer.update(dt);
   }
+  bgMusicInit() {
+   
 
+		this.bgMusic.loop(true);
+		this.bgMusic?.play();
+		this.bgMusic.volume(0.8);
+	}
   resetGame() {
     console.log("_________________Reset Game____________________________");
 
@@ -112,21 +121,34 @@ export class MainScene extends Scene {
       this.destroyCoin(msgParams);
     }
     if (msgType === "gameOver") {
+      if(Globals.isVisible && GameData.isMusicOn)
+      Globals.soundResources.GameEnd?.play(); 
+
       LevelVar.isGameOver = true;
       this.resetGame();
       this.mainContainer.addChild(new GameRestartPopup(5, () => { this.resetGame() }, () => { this.resetGame(); this.mainContainer.addChild(new OpenPanel())}));  
     }
     if (msgType === "changeLevel") {
+      if(Globals.isVisible && GameData.isMusicOn)
+        Globals.soundResources.upgrade?.play(); 
       this.lvlContainer.expandHexGrid();
+      Globals.soundResources.click?.play();
     }
-    if (msgType === "ActivateHande") {
-      this.UiContainer.updateCurrentMoney(-parseInt(this.UiContainer.handBtn.price.text))
-    }
+  
     if (msgType === "ActivateReverse") {
       if (this.lvlContainer.reverseMove())
+      {
         this.UiContainer.updateCurrentMoney(-parseInt(this.UiContainer.reverseBtn.price.text))
+        this.UiContainer.reverseBtn.tweenButton();
+
+      }
       else
+      {
+        this.UiContainer.reverseBtn.tweenFalse();
+
+        this.UiContainer.reverseBtn.setActive(true);
         this.UiContainer.reverseBtn.price.updateLabelText((parseInt(this.UiContainer.reverseBtn.price.text) - 20).toString());
+      }
     }
     if (msgType === "canHammer") {
       if (this.activatePowerup()) {
@@ -135,9 +157,15 @@ export class MainScene extends Scene {
         this.UiContainer.updateCurrentMoney(-parseInt(this.UiContainer.hammerBtn.price.text));
         this.UiContainer.reverseBtn.setActive(false);
         this.UiContainer.handBtn.setActive(false);
+        this.UiContainer.hammerBtn.tweenButton();
       }
       else
-        this.UiContainer.reverseBtn.price.updateLabelText((parseInt(this.UiContainer.hammerBtn.price.text) - 20).toString());
+      {
+        this.UiContainer.hammerBtn.tweenFalse();
+
+        this.UiContainer.hammerBtn.setActive(true);
+        this.UiContainer.hammerBtn.price.updateLabelText((parseInt(this.UiContainer.hammerBtn.price.text) - 20).toString());
+      }
     }
     if (msgType === "HammerActivated") {
       const piece = msgParams;
@@ -159,9 +187,15 @@ export class MainScene extends Scene {
         this.UiContainer.updateCurrentMoney(-parseInt(this.UiContainer.hammerBtn.price.text));
         this.UiContainer.reverseBtn.setActive(false);
         this.UiContainer.handBtn.setActive(false);
+        this.UiContainer.handBtn.tweenButton();
+
       }
       else
-        this.UiContainer.reverseBtn.price.updateLabelText((parseInt(this.UiContainer.hammerBtn.price.text) - 20).toString());
+      {
+        this.UiContainer.handBtn.tweenFalse();
+        
+        this.UiContainer.handBtn.price.updateLabelText((parseInt(this.UiContainer.hammerBtn.price.text) - 20).toString());
+      }
     }
     if (msgType === "HandActivated") {
       const piece = this.lvlContainer.hexPieces[msgParams.hexagonId];
@@ -175,18 +209,43 @@ export class MainScene extends Scene {
 
       piece.hexagonPlaced = undefined;
     }
+    if(msgType === "pause")
+    {
+      Globals.isVisible = false;
+      this.bgMusic.pause();
+    }
+    if(msgType === "resume")
+    {
+      Globals.isVisible = true;
+      // if(!this.bgMusic.playing)
+      if(GameData.isMusicOn)
+        this.bgMusic.play();
+        else
+        this.bgMusic.pause();
+
+    }
+    if(msgType === "MusicOn")
+    {
+      if(GameData.isMusicOn)
+      this.bgMusic.play();
+      else
+      this.bgMusic.pause();
+    }
+
+      
 
   }
   activatePowerup(): boolean {
     let canUse: boolean = false;
     this.lvlContainer.hexPieces.forEach(element => {
       if (!element.hexagonPlaced) return;
-      console.log(element);
 
       element.hexagonPlaced.setActive(true);
       canUse = true;
 
     });
+    console.log(canUse);
+    
     return canUse;
   }
 }

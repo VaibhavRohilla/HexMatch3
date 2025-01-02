@@ -1,10 +1,10 @@
-import {  Container, GlobalUniformSystem, Graphics, Sprite, Texture } from "pixi.js";
+import {  AnimatedSprite, Container, GlobalUniformSystem, Graphics, Sprite, Texture } from "pixi.js";
 import { TextLabel } from "./TextLabel";
 import { GameData, Globals, LevelVar } from "./Globals";
 import { Easing, Tween } from "@tweenjs/tween.js";
 
 
-export class Button extends Container {
+export class PowerUpButton extends Container {
     bgGraphic : Graphics
     imageTexture: Sprite;
     price : TextLabel;
@@ -39,14 +39,15 @@ export class Button extends Container {
         this.on("pointerdown", () => {
             if(GameData.Money >= parseInt(this.price.text))
             {
-                this.tweenButton();
+                
                 CallBack();
                 this.increaseMultiplier();
+
+                if(Globals.isVisible && GameData.isMusicOn)
+                Globals.soundResources.click?.play(); 
             }
             else
-            this.tweenFalse();
-
-
+                this.tweenFalse();
             return;
         })
         
@@ -70,6 +71,8 @@ export class Button extends Container {
     }   
     tweenFalse()
     {
+        if(Globals.isVisible && GameData.isMusicOn)
+        Globals.soundResources.Error?.play(); 
         this.setActive(false);
 
         const idlePosition = this.position.x;
@@ -94,5 +97,44 @@ export class Button extends Container {
         this.interactive = active;
         this.cursor = 'pointer';
 
+    }
+}
+
+
+export class musicButton extends AnimatedSprite
+{
+    constructor()
+    {
+        super([Globals.resources.MusicOn, Globals.resources.MusicOff]);
+        this.anchor.set(0.5);
+        this.scale.set(0.15);
+        this.gotoAndStop(0);
+        this.interactive = true;
+        this.cursor = 'pointer';
+        this.on("pointerdown", () => {
+            this.tweenButton();
+        });
+
+    }
+    tweenButton()
+    {   
+        GameData.isMusicOn = !GameData.isMusicOn;
+        const currentFrame = GameData.isMusicOn ? 0 : 1;
+        Globals.emitter?.Call("MusicOn");
+        this.gotoAndStop(currentFrame);
+    }  
+
+    setActive(active: boolean)
+    {
+        if(active)
+        {
+            this.interactive = true;
+            this.cursor = 'pointer';
+        }
+        else
+        {
+            this.interactive = false;
+            this.cursor = '';
+        }
     }
 }

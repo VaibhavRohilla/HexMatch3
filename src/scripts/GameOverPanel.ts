@@ -1,7 +1,7 @@
 import { Tween, Easing } from "@tweenjs/tween.js";
 import { Container, Sprite, Graphics, AnimatedSprite, mipmapScaleModeToGlFilter } from "pixi.js";
 import { config } from "./appConfig";
-import { Globals, LevelVar } from "./Globals";
+import { GameData, Globals, LevelVar } from "./Globals";
 import { TextLabel } from "./TextLabel";
 
 
@@ -204,6 +204,8 @@ export class OpenPanel extends Container {
         playButton.cursor = 'pointer';
 
         playButton.on("pointerdown", () => {
+             if(Globals.isVisible && GameData.isMusicOn)
+            Globals.soundResources.click?.play(); 
             new Tween(gameoverbg.position, Globals.SceneManager?.tweenGroup)
             .to({x : config.logicalWidth/2, y:  -50}, 700)
             .easing(Easing.Back.In)
